@@ -1,20 +1,28 @@
-const http = require("http")
+const http = require("http");
 const path = require("path");
 require("dotenv").config();
 const express = require("express");
-const socketio = require("socket.io")
+const socketio = require("socket.io");
 
 const app = express();
-const server = http.createServer(app)
-const io = socketio(server)
+const server = http.createServer(app);
+const io = socketio(server);
 
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, "public")));
 
-io.on('connection', socket => {
-    console.log("new websoket connection...")
+io.on("connection", (socket) => {
+  socket.emit("message", "Welcome to ExpressChat");
 
-    socket.emit('message', 'Welcome to expresschat')
-})
+  socket.broadcast.emit("message", "A user has joined the chat");
+
+  socket.on("disconnect", () => {
+    io.emit("message", "A user has left the chat");
+  });
+
+  socket.on("chatMessage", (msg) => {
+    io.emit("message", msg);
+  });
+});
 
 const PORT = process.env.PORT || 3000;
 
