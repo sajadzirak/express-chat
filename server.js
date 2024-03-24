@@ -3,6 +3,7 @@ const path = require("path");
 require("dotenv").config();
 const express = require("express");
 const socketio = require("socket.io");
+const formatMessage = require("./utils/messages");
 
 const app = express();
 const server = http.createServer(app);
@@ -10,17 +11,22 @@ const io = socketio(server);
 
 app.use(express.static(path.join(__dirname, "public")));
 
-io.on("connection", (socket) => {
-  socket.emit("message", "Welcome to ExpressChat");
+const botName = "Express-chat";
 
-  socket.broadcast.emit("message", "A user has joined the chat");
+io.on("connection", (socket) => {
+  socket.emit("message", formatMessage(botName, "Welcome to ExpressChat"));
+
+  socket.broadcast.emit(
+    "message",
+    formatMessage(botName, "A user has joined the chat")
+  );
 
   socket.on("disconnect", () => {
-    io.emit("message", "A user has left the chat");
+    io.emit("message", formatMessage(botName, "A user has left the chat"));
   });
 
   socket.on("chatMessage", (msg) => {
-    io.emit("message", msg);
+    io.emit("message", formatMessage("USER", msg));
   });
 });
 
